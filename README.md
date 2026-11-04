@@ -53,6 +53,4 @@ The 96 new literary descriptions are imaginative editorial responses to titles, 
 
 The collection contains covers and collaborations. A SoundCloud all-rights-reserved setting is not independent proof of complete ownership. The website and its metadata grant no music, image, synchronization, master-use or other third-party rights. Licensing inquiries go to Matthew via @enuminous or enuminous@gmail.com; terms are confirmed per recording.
 
-Repository: https://github.com/enuminous/Invisible-Caterpillar
-
-The catalog files are published at the repository root. GitHub Pages can serve this directory directly.
+No website has been deployed by preparing this archive.
