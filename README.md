@@ -10,10 +10,14 @@ A flat, buildless static website for Matthew Chenoweth Wright's public SoundClou
 - `catalog.json`: editable metadata, the 96 literary notes, 1,392 uploads and 76 additional recordings referenced by playlists.
 - `cover-*.jpg`: 93 local images (81 album covers and 12 labeled track-art fallbacks). Three albums have no public artwork and use text panels.
 - `Invisible_Caterpillar_SoundCloud_Catalog_2026-11-04.xlsx`: the catalog spreadsheet, preserved as a dated snapshot.
-- `build_site.py`: optional standard-library Python script to regenerate both HTML pages after editing `catalog.json`.
+- `build_site.py`: standard-library Python script to regenerate both HTML pages; `--validate` also regenerates the catalog reports. Counts and the snapshot date are read from the catalog.
+- `validate_catalog.py`: offline report-only completeness checks and identity-based snapshot comparisons.
+- `baselines/`: byte-preserved November 4 JSON and provenance/checksum manifest.
+- `reports/`: machine-readable findings, human-readable issue report and snapshot comparison.
+- `tests/` and `.github/workflows/catalog-validation.yml`: regression tests and CI artifact generation.
 - `favicon.svg`, `.nojekyll` and this README.
 
-Every ZIP entry sits at the root. There is no enclosing directory, nested assets folder, package installation or required build step.
+The original site assets remain at the repository root. Validation support lives in `baselines/`, `reports/`, `tests/` and `.github/workflows/`. No package installation is required.
 
 ## Open locally
 
@@ -36,10 +40,10 @@ GitHub's instructions: https://docs.github.com/en/pages/getting-started-with-git
 The simplest text edit is directly in `index.html`. For consistent regenerated pages, edit each collection's `literary_note` or other fields in `catalog.json`, then run:
 
 ```bash
-python3 build_site.py
+python3 build_site.py --validate
 ```
 
-That command regenerates `index.html` and `tracks.html`; it preserves CSS, JavaScript and images. It does not rescan SoundCloud or update the spreadsheet. If you change data, review dates and counts before publishing. Search and sorting are browser-local and do not alter source files.
+That command regenerates `index.html`, `tracks.html` and `reports/`; it preserves source metadata, CSS, JavaScript and images. It does not rescan SoundCloud or update the spreadsheet. If you change data, review dates and counts before publishing. Search and sorting are browser-local and do not alter source files.
 
 ## Source and editorial scope
 
@@ -54,3 +58,27 @@ The 96 new literary descriptions are imaginative editorial responses to titles, 
 The collection contains covers and collaborations. A SoundCloud all-rights-reserved setting is not independent proof of complete ownership. The website and its metadata grant no music, image, synchronization, master-use or other third-party rights. Licensing inquiries go to Matthew via @enuminous or enuminous@gmail.com; terms are confirmed per recording.
 
 No website has been deployed by preparing this archive.
+
+## Report-only completeness validation
+
+Run offline with Python 3.11 or newer, from the repository root:
+
+```bash
+python3 -m unittest discover -s tests -v
+python3 validate_catalog.py catalog.json \
+  --baseline baselines/catalog-2026-11-04.json \
+  --baseline-manifest baselines/catalog-2026-11-04.manifest.json \
+  --output-dir reports
+python3 build_site.py
+```
+
+See [VALIDATION.md](VALIDATION.md) for the schema, checks, interpretation, baseline provenance and future-snapshot workflow.
+
+- [Execution summary](reports/summary.md): every executed check, scope and result.
+- [Human-readable issue report](reports/issues.md): review findings and all affected missing-field entities.
+- [Machine-readable validation](reports/validation.json): full findings, source-field states, coverage and entity/membership index.
+- [Snapshot change report](reports/changes.md) and [machine-readable changes](reports/changes.json).
+
+The November 5 implementation ran all 11 check groups against the November 4 snapshot: **0 verified schema/internal-consistency errors, 7,106 missing-source field findings and 827 review findings**. These are field-level counts, not counts of distinct recordings. The 1,392 uploads and 76 other-uploader references remain separate, and upload duration recomputes to **132.51778694 hours**. The unchanged snapshot compares identically to the frozen baseline.
+
+The validator returns exit code 0 when reports are produced, including when they contain findings. Exit code 2 indicates execution/input failure (for example unreadable JSON or baseline checksum failure). It never repairs metadata or fails CI merely because a recording lacks credits, ISRCs or engagement. The test and site-build steps can still fail for software regressions or unrenderable inputs. CI runs on pushes to main, pull requests and manual dispatch, writes a job summary and uploads fresh reports as an artifact. Committed reports describe their recorded input hash; regenerate them after a catalog update. No recurring external SoundCloud scan or separate Sites application is created.

@@ -1,0 +1,45 @@
+name: Catalog validation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test validation, snapshot comparisons and frozen baseline
+        run: python -m unittest discover -s tests -v
+      - name: Produce report-only catalog findings and comparison
+        run: >-
+          python validate_catalog.py catalog.json
+          --baseline baselines/catalog-2026-11-04.json
+          --baseline-manifest baselines/catalog-2026-11-04.manifest.json
+          --output-dir "$RUNNER_TEMP/catalog-reports"
+      - name: Publish execution summary
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/catalog-reports/summary.md" ]; then
+            cat "$RUNNER_TEMP/catalog-reports/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Rebuild existing site
+        run: python build_site.py
+      - name: Verify generated HTML is reproducible
+        run: git diff --exit-code -- index.html tracks.html
+      - name: Upload complete reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: catalog-validation-${{ github.sha }}
+          path: ${{ runner.temp }}/catalog-reports/
+          if-no-files-found: error

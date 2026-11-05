@@ -1,0 +1,10 @@
+{
+  "bytes": 1109416,
+  "git_blob_sha": "b928ce82451af93caddab5214435b4b9d3b7b0c3",
+  "note": "Exact original bytes; frozen comparison baseline, not corrected metadata.",
+  "sha256": "7f635b87508e2d808d74a5d4d7f8ae12ff6c021efefe6916071b669bd04f0b01",
+  "snapshot_date": "2026-11-04",
+  "source_commit": "4744f491a98099c58b0c18e47834f1de17cfcc8f",
+  "source_path": "catalog.json",
+  "source_repository": "https://github.com/enuminous/Invisible-Caterpillar"
+}
